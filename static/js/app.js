@@ -162,7 +162,7 @@ function renderCards() {
             <div class="card-item fade-in ${foilClass}" data-rarity="${rarityClass}" data-index="${i}" style="animation-delay:${delay}ms">
                 <img src="${card.image_uri}" alt="${escapeHtml(card.name)}" loading="lazy" class="loading"
                      onload="this.classList.remove('loading');this.classList.add('loaded')"
-                     onerror="this.src='/static/img/card-back.svg';this.classList.add('loaded')">
+                     onerror="if(!this.dataset.fb) { this.dataset.fb='1'; this.src='${card.fallback_image_uri || ''}'; } else { this.src='/static/img/card-back.svg'; this.classList.add('loaded'); }">
                 ${card.quantity > 1 ? `<span class="card-qty-badge">x${card.quantity}</span>` : ''}
                 <div class="card-overlay">
                     <div class="card-overlay-name">${escapeHtml(card.name)}</div>
@@ -234,6 +234,11 @@ function showSkeletons() {
 // Modal
 // =========================================================================
 function openModal(card) {
+    dom.modalImage.onerror = function() {
+        if (!this.dataset.fb) { this.dataset.fb = '1'; this.src = card.fallback_image_uri || '/static/img/card-back.svg'; }
+        else { this.src = '/static/img/card-back.svg'; }
+    };
+    dom.modalImage.dataset.fb = '';
     dom.modalImage.src = card.image_uri;
     dom.modalImage.alt = card.name;
     dom.modalName.textContent = card.name;

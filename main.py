@@ -47,7 +47,8 @@ def load_collection() -> list[dict]:
                 "condition": row["Condition"],
                 "language": row["Language"],
                 "currency": row["Purchase price currency"],
-                "image_uri": f"https://api.scryfall.com/cards/{row['Scryfall ID']}?format=image&version=normal",
+                "image_uri": f"https://api.scryfall.com/cards/{row['Set code'].lower()}/{row['Collector number']}/fr?format=image&version=normal",
+                "fallback_image_uri": f"https://api.scryfall.com/cards/{row['Scryfall ID']}?format=image&version=normal",
             })
     return cards
 
