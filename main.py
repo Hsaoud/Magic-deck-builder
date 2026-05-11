@@ -168,20 +168,41 @@ async def scryfall_search(
     """Proxy Scryfall card search and annotate results with collection status."""
     client: httpx.AsyncClient = app.state.http_client
     try:
+        # Try to search with French language forced
+        fr_q = f"({q}) lang:fr"
         resp = await client.get(
             "https://api.scryfall.com/cards/search",
-            params={"q": q, "page": page, "order": "name"},
+            params={"q": fr_q, "page": page, "order": "name"},
         )
-        if resp.status_code == 404:
-            return {"data": [], "has_more": False, "total_cards": 0}
-        resp.raise_for_status()
-        data = resp.json()
+        
+        data = {}
+        if resp.status_code == 200:
+            data = resp.json()
+        elif resp.status_code == 404:
+            # Fallback to default (English/any) if no French results found
+            resp = await client.get(
+                "https://api.scryfall.com/cards/search",
+                params={"q": q, "page": page, "order": "name"},
+            )
+            if resp.status_code == 404:
+                return {"data": [], "has_more": False, "total_cards": 0}
+            resp.raise_for_status()
+            data = resp.json()
+        else:
+            resp.raise_for_status()
 
         # Annotate each card with collection membership
         cards = []
         for card in data.get("data", []):
+            canonical_name = card.get("name", "")
+            printed_name = card.get("printed_name", canonical_name)
+            
             in_collection = card.get("id", "") in collection_scryfall_ids
-            in_collection_by_name = card.get("name", "").lower() in collection_names
+            in_collection_by_name = (
+                canonical_name.lower() in collection_names or 
+                printed_name.lower() in collection_names
+            )
+            
             image = ""
             if "image_uris" in card:
                 image = card["image_uris"].get("normal", card["image_uris"].get("large", ""))
@@ -192,7 +213,7 @@ async def scryfall_search(
 
             cards.append({
                 "scryfall_id": card.get("id", ""),
-                "name": card.get("name", ""),
+                "name": printed_name,
                 "set_code": card.get("set", ""),
                 "set_name": card.get("set_name", ""),
                 "collector_number": card.get("collector_number", ""),
