@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MTG Deckbuilder - Collection Magic: The Gathering">
+    <title>MTG Deckbuilder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mtg: {
+                            darker: '#0a0a0f', dark: '#12121c', card: '#1a1a2e',
+                            border: '#2a2a3e', accent: '#c9a84c', gold: '#f0d060',
+                            rarity: { common:'#6b7280', uncommon:'#a0a0b0', rare:'#d4a84b', mythic:'#e8601c', special:'#a855f7' }
+                        }
+                    },
+                    fontFamily: { display:['Cinzel','serif'], body:['Inter','sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-mtg-darker text-gray-200 font-body min-h-screen flex flex-col">
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 border-b border-mtg-border backdrop-blur-xl bg-mtg-darker/80">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-mtg-accent to-mtg-gold flex items-center justify-center">
+                        <svg class="w-5 h-5 text-mtg-darker" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2L3 7l7 5 7-5-7-5zM3 12l7 5 7-5-7-5-7 5z"/></svg>
+                    </div>
+                    <h1 class="font-display font-bold text-xl tracking-wide text-mtg-accent">MTG Deckbuilder</h1>
+                </div>
+                <nav class="flex items-center gap-1" id="main-nav">
+                    <button class="nav-tab active" data-page="collection">Ma Collection</button>
+                    <button class="nav-tab" data-page="deckbuilder">Deck Builder</button>
+                    <button class="nav-tab" data-page="suggestions">Suggestions</button>
+                </nav>
+                <div class="hidden md:flex items-center gap-2 text-sm">
+                    <span class="text-gray-500">Valeur</span>
+                    <span id="header-value" class="font-semibold text-mtg-accent">-</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-6">
+        <!-- PAGE: COLLECTION -->
+        <section id="page-collection" class="page-section">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card"><span class="stat-label">Cartes totales</span><span class="stat-value" id="stat-total">-</span></div>
+                <div class="stat-card"><span class="stat-label">Entrées uniques</span><span class="stat-value" id="stat-unique">-</span></div>
+                <div class="stat-card"><span class="stat-label">Valeur totale</span><span class="stat-value text-mtg-accent" id="stat-value">-</span></div>
+                <div class="stat-card"><span class="stat-label">Classeurs</span><span class="stat-value" id="stat-binders">-</span></div>
+            </div>
+            <!-- Rarity pills -->
+            <div class="flex flex-wrap gap-2 mb-6" id="rarity-pills"></div>
+            <!-- Filters -->
+            <div class="filter-bar">
+                <div class="relative flex-1 min-w-[200px]">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" id="filter-search" placeholder="Rechercher dans la collection..." class="w-full pl-10 pr-4 py-2.5 bg-mtg-darker border border-mtg-border rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-mtg-accent/50 focus:ring-1 focus:ring-mtg-accent/30 transition-all">
+                </div>
+                <select id="filter-binder" class="filter-select"><option value="">Tous les classeurs</option></select>
+                <select id="filter-rarity" class="filter-select">
+                    <option value="">Toutes raretés</option>
+                    <option value="common">Commune</option><option value="uncommon">Peu commune</option>
+                    <option value="rare">Rare</option><option value="mythic">Mythique</option><option value="special">Spéciale</option>
+                </select>
+                <div class="flex items-center border border-mtg-border rounded-xl overflow-hidden">
+                    <button id="view-grid" class="view-toggle active" title="Grille"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg></button>
+                    <button id="view-list" class="view-toggle" title="Liste"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></button>
+                </div>
+            </div>
+            <!-- Results count -->
+            <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                <span id="results-count">Chargement...</span>
+                <select id="filter-pagesize" class="filter-select text-xs !py-1.5">
+                    <option value="24">24/page</option><option value="48" selected>48/page</option><option value="96">96/page</option>
+                </select>
+            </div>
+            <!-- Card Grid -->
+            <div id="card-grid" class="card-grid"></div>
+            <!-- Pagination -->
+            <div id="pagination" class="flex items-center justify-center gap-2 mt-8 mb-4"></div>
+        </section>
+        <!-- PAGE: DECKBUILDER -->
+        <section id="page-deckbuilder" class="page-section hidden">
+            <div class="db-layout">
+                <!-- LEFT: Deck List Sidebar -->
+                <aside class="db-sidebar">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-display text-lg text-mtg-accent">Mes Decks</h2>
+                        <button id="db-new-deck" class="btn-accent-sm">+ Nouveau</button>
+                    </div>
+                    <div id="db-deck-list" class="space-y-2">
+                        <!-- Deck entries rendered by JS -->
+                        <div class="text-center text-gray-600 text-sm py-8">Aucun deck. Créez-en un !</div>
+                    </div>
+                </aside>
+
+                <!-- CENTER: Search Panel -->
+                <div class="db-center">
+                    <!-- Search bar -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" id="db-search" placeholder="Rechercher une carte sur Scryfall..." class="w-full pl-10 pr-4 py-2.5 bg-mtg-darker border border-mtg-border rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-mtg-accent/50 focus:ring-1 focus:ring-mtg-accent/30 transition-all">
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span id="db-search-count" class="text-xs text-gray-600"></span>
+                            <span id="db-search-loading" class="text-xs text-mtg-accent hidden">Recherche en cours...</span>
+                        </div>
+                    </div>
+                    <!-- Search Results Grid -->
+                    <div id="db-search-results" class="db-search-grid">
+                        <div class="col-span-full text-center py-16 text-gray-600">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <p>Recherchez une carte Magic pour l'ajouter au deck</p>
+                        </div>
+                    </div>
+                    <!-- Load more -->
+                    <div id="db-load-more" class="text-center mt-4 hidden">
+                        <button id="db-load-more-btn" class="btn-accent-sm">Charger plus de résultats</button>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Current Deck Contents -->
+                <aside class="db-deck-panel">
+                    <div id="db-deck-empty" class="text-center text-gray-600 py-16">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        <p>Sélectionnez ou créez un deck</p>
+                    </div>
+                    <div id="db-deck-detail" class="hidden">
+                        <div class="flex items-center gap-2 mb-3">
+                            <input type="text" id="db-deck-name-input" class="flex-1 bg-transparent border-b border-mtg-border text-lg font-display text-white focus:outline-none focus:border-mtg-accent transition-colors py-1" placeholder="Nom du deck">
+                            <button id="db-delete-deck" class="text-gray-600 hover:text-red-400 transition-colors" title="Supprimer le deck">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                        <!-- Deck stats bar -->
+                        <div class="flex items-center gap-3 mb-3 text-xs text-gray-500">
+                            <span id="db-deck-card-count">0 cartes</span>
+                            <span class="text-mtg-border">|</span>
+                            <span id="db-deck-collection-pct" class="text-emerald-500">0% dans la collection</span>
+                        </div>
+                        <!-- Deck card list -->
+                        <div id="db-deck-cards" class="db-deck-card-list">
+                            <!-- Cards rendered by JS -->
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- New Deck Modal -->
+            <div id="db-new-deck-modal" class="modal-overlay hidden" role="dialog">
+                <div class="modal-backdrop" id="db-modal-backdrop"></div>
+                <div class="modal-content max-w-md">
+                    <h3 class="font-display text-xl text-white mb-4">Nouveau Deck</h3>
+                    <input type="text" id="db-new-deck-name" placeholder="Nom du deck..." class="w-full px-4 py-3 bg-mtg-darker border border-mtg-border rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-mtg-accent/50 mb-4">
+                    <div class="flex justify-end gap-3">
+                        <button id="db-new-deck-cancel" class="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition-colors">Annuler</button>
+                        <button id="db-new-deck-confirm" class="btn-accent-sm px-6">Créer</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- PAGE: SUGGESTIONS -->
+        <section id="page-suggestions" class="page-section hidden">
+            <div class="sg-layout">
+                <!-- LEFT: Suggestion Form -->
+                <div class="sg-form-panel">
+                    <h2 class="font-display text-xl text-mtg-accent mb-1">Suggérer une carte</h2>
+                    <p class="text-gray-500 text-sm mb-5">Proposez l'ajout d'une carte à un deck.</p>
+
+                    <!-- Author -->
+                    <label class="sg-label" for="sg-author">Votre nom</label>
+                    <input type="text" id="sg-author" placeholder="Ex: Jean" class="sg-input mb-4" maxlength="100">
+
+                    <!-- Deck name -->
+                    <label class="sg-label" for="sg-deck-name">Nom du deck ciblé</label>
+                    <input type="text" id="sg-deck-name" placeholder="Ex: Mono Red Aggro" class="sg-input mb-4" maxlength="200">
+
+                    <!-- Card search -->
+                    <label class="sg-label">Carte à suggérer</label>
+                    <div class="relative mb-2">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" id="sg-card-search" placeholder="Rechercher via Scryfall..." class="sg-input pl-10" maxlength="200">
+                    </div>
+                    <!-- Card search results dropdown -->
+                    <div id="sg-card-dropdown" class="sg-card-dropdown hidden"></div>
+
+                    <!-- Selected card preview -->
+                    <div id="sg-card-preview" class="sg-card-preview hidden">
+                        <img id="sg-card-preview-img" src="" alt="" class="sg-card-preview-img">
+                        <div class="flex-1 min-w-0">
+                            <div id="sg-card-preview-name" class="font-semibold text-white text-sm truncate"></div>
+                            <div id="sg-card-preview-set" class="text-xs text-gray-500"></div>
+                        </div>
+                        <button id="sg-card-clear" class="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Submit -->
+                    <button id="sg-submit" class="sg-submit-btn mt-5" disabled>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        Envoyer la suggestion
+                    </button>
+
+                    <!-- Success message -->
+                    <div id="sg-success" class="sg-success hidden">
+                        <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Suggestion envoyée avec succès !</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Suggestions Feed -->
+                <div class="sg-feed-panel">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-display text-xl text-mtg-accent">Flux de suggestions</h2>
+                        <div class="flex items-center gap-2">
+                            <span id="sg-feed-count" class="text-xs text-gray-500">0 suggestions</span>
+                            <span id="sg-poll-indicator" class="sg-poll-dot"></span>
+                        </div>
+                    </div>
+                    <div id="sg-feed" class="sg-feed">
+                        <div class="text-center text-gray-600 py-16">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <p>Aucune suggestion pour le moment</p>
+                            <p class="text-xs mt-1">Les nouvelles suggestions apparaîtront ici en temps réel</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- FOOTER -->
+    <footer class="border-t border-mtg-border py-4 text-center text-xs text-gray-600">
+        <p>MTG Deckbuilder &middot; Images via <a href="https://scryfall.com" target="_blank" class="text-mtg-accent hover:underline">Scryfall</a> &middot; Data from ManaBox</p>
+    </footer>
+    <!-- CARD DETAIL MODAL -->
+    <div id="card-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content">
+            <button id="modal-close" class="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-shrink-0"><img id="modal-image" src="" alt="" class="rounded-xl w-full md:w-[320px] shadow-2xl"></div>
+                <div class="flex-1 space-y-4">
+                    <h2 id="modal-name" class="font-display text-2xl text-white"></h2>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modal-set" class="detail-badge"></span>
+                        <span id="modal-rarity" class="detail-badge"></span>
+                        <span id="modal-foil" class="detail-badge hidden"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="detail-field"><span class="text-gray-500">Édition</span><span id="modal-setname" class="text-gray-200"></span></div>
+                        <div class="detail-field"><span class="text-gray-500">Numéro</span><span id="modal-number" class="text-gray-200"></span></div>
+                        <div class="detail-field"><span class="text-gray-500">Quantité</span><span id="modal-qty" class="text-gray-200"></span></div>
+                        <div class="detail-field"><span class="text-gray-500">État</span><span id="modal-condition" class="text-gray-200"></span></div>
+                        <div class="detail-field"><span class="text-gray-500">Langue</span><span id="modal-lang" class="text-gray-200"></span></div>
+                        <div class="detail-field"><span class="text-gray-500">Prix d'achat</span><span id="modal-price" class="text-mtg-accent font-semibold"></span></div>
+                        <div class="detail-field col-span-2"><span class="text-gray-500">Classeur</span><span id="modal-binder" class="text-gray-200"></span></div>
+                    </div>
+                    <a id="modal-scryfall-link" href="#" target="_blank" class="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-lg bg-mtg-card border border-mtg-border text-sm text-mtg-accent hover:border-mtg-accent/50 transition-colors">Voir sur Scryfall</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

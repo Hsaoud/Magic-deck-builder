@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 680" fill="none">
+  <rect width="488" height="680" rx="16" fill="#1a1a2e"/>
+  <rect x="2" y="2" width="484" height="676" rx="14" stroke="#2a2a3e" stroke-width="2" fill="none"/>
+  <g transform="translate(194, 280)">
+    <path d="M50 0L93.3 25v50L50 100 6.7 75V25L50 0z" fill="#12121c" stroke="#2a2a3e" stroke-width="2"/>
+    <text x="50" y="58" text-anchor="middle" fill="#4a4a5e" font-family="serif" font-size="28" font-weight="bold">MTG</text>
+  </g>
+</svg>
