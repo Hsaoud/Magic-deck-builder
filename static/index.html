@@ -279,6 +279,18 @@
             </div>
         </div>
     </div>
+    <!-- IMAGE ONLY MODAL -->
+    <div id="image-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" style="z-index: 1000;">
+        <div class="modal-backdrop" id="image-modal-backdrop"></div>
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div class="relative max-w-2xl w-full flex flex-col items-center justify-center pointer-events-auto">
+                <button id="image-modal-close" class="absolute -top-12 right-0 text-gray-400 hover:text-white transition-colors z-10 p-2 bg-mtg-darker/50 rounded-full hover:bg-mtg-darker">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <img id="image-modal-img" src="" alt="" class="rounded-xl max-h-[85vh] object-contain shadow-2xl">
+            </div>
+        </div>
+    </div>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

@@ -263,6 +263,25 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
+function openImageModal(src, alt) {
+    const modal = $('#image-modal');
+    const img = $('#image-modal-img');
+    if (modal && img) {
+        img.src = src;
+        img.alt = alt || '';
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeImageModal() {
+    const modal = $('#image-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
 // =========================================================================
 // Navigation
 // =========================================================================
@@ -327,7 +346,18 @@ function initEvents() {
     // Modal close
     dom.modalClose.addEventListener('click', closeModal);
     dom.modalBackdrop.addEventListener('click', closeModal);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    
+    const imageModalClose = $('#image-modal-close');
+    const imageModalBackdrop = $('#image-modal-backdrop');
+    if (imageModalClose) imageModalClose.addEventListener('click', closeImageModal);
+    if (imageModalBackdrop) imageModalBackdrop.addEventListener('click', closeImageModal);
+
+    document.addEventListener('keydown', (e) => { 
+        if (e.key === 'Escape') {
+            closeModal();
+            if (typeof closeImageModal === 'function') closeImageModal();
+        }
+    });
 }
 
 // =========================================================================
@@ -957,7 +987,7 @@ function sgRenderFeed(total) {
         return;
     }
 
-    feed.innerHTML = sgState.suggestions.map(s => {
+    feed.innerHTML = sgState.suggestions.map((s, i) => {
         const imgSrc = s.card_image_uri || '/static/img/card-back.svg';
         const timeAgo = sgFormatTimeAgo(s.timestamp);
         const deckPart = s.deck_name
@@ -965,7 +995,7 @@ function sgRenderFeed(total) {
             : '';
         return `
             <div class="sg-suggestion">
-                <img src="${imgSrc}" alt="${escapeHtml(s.card_name)}" onerror="this.src='/static/img/card-back.svg'">
+                <img src="${imgSrc}" alt="${escapeHtml(s.card_name)}" onerror="this.src='/static/img/card-back.svg'" class="cursor-pointer hover:scale-105 transition-transform" data-index="${i}">
                 <div class="sg-suggestion-body">
                     <div class="sg-suggestion-text">
                         <span class="sg-author">${escapeHtml(s.author)}</span> suggère
@@ -977,6 +1007,17 @@ function sgRenderFeed(total) {
             </div>
         `;
     }).join('');
+
+    // Add click listeners to images
+    feed.querySelectorAll('.sg-suggestion img').forEach(img => {
+        img.addEventListener('click', () => {
+            const index = parseInt(img.dataset.index);
+            const suggestion = sgState.suggestions[index];
+            if (suggestion) {
+                openImageModal(suggestion.card_image_uri || '/static/img/card-back.svg', suggestion.card_name);
+            }
+        });
+    });
 }
 
 function sgFormatTimeAgo(isoStr) {
