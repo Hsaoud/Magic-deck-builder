@@ -39,9 +39,7 @@ const dom = {
     // Stats
     statTotal: $('#stat-total'),
     statUnique: $('#stat-unique'),
-    statValue: $('#stat-value'),
     statBinders: $('#stat-binders'),
-    headerValue: $('#header-value'),
     // Modal
     modal: $('#card-modal'),
     modalBackdrop: $('#modal-backdrop'),
@@ -121,9 +119,7 @@ function renderStats() {
     if (!s) return;
     dom.statTotal.textContent = s.total_cards.toLocaleString('fr-FR');
     dom.statUnique.textContent = s.unique_entries.toLocaleString('fr-FR');
-    dom.statValue.textContent = `${s.total_value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${s.currency}`;
     dom.statBinders.textContent = Object.keys(s.binders).length;
-    dom.headerValue.textContent = `${s.total_value.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${s.currency}`;
 
     // Rarity pills
     const rarityNames = { common: 'Commune', uncommon: 'Peu commune', rare: 'Rare', mythic: 'Mythique', special: 'Spéciale' };
